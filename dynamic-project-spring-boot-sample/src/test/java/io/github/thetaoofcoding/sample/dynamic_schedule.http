@@ -1,0 +1,33 @@
+### 查询所有动态定时任务
+GET http://localhost:8080/dynamicSchedule
+
+
+
+### 新增动态定时任务
+POST http://localhost:8080/dynamicSchedule
+Content-Type: application/json
+
+{
+  "beanName": "print-a",
+  "cronExpression": "0/10 * * * * ? ",
+  "registryKey": "test1",
+  "description": "动态定时任务：测试1"
+}
+
+
+
+### 修改动态定时任务
+PUT http://localhost:8080/dynamicSchedule
+Content-Type: application/json
+
+{
+  "beanName": "print-b",
+  "cronExpression": "0/3 * * * * ? ",
+  "registryKey": "test1",
+  "description": "动态定时任务：测试1"
+}
+
+
+
+### 删除动态定时任务
+DELETE http://localhost:8080/dynamicSchedule/test1

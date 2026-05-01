@@ -1,0 +1,41 @@
+### 获取内存中所有已注册的 refreshableBean 类型的 beanName
+GET http://localhost:8080/dynamicBean/beanNames
+
+
+
+### 获取数据库中的所有 refreshableBean 列表
+GET http://localhost:8080/dynamicBean
+
+
+
+### 新增 bean
+POST http://localhost:8080/dynamicBean
+Content-Type: application/json
+
+{
+  "beanName": "test1",
+  "script": "return { param -> println 'test1 running ...' } as SAM",
+  "description": "test任务"
+}
+
+
+
+### 运行 bean
+GET http://localhost:8080/dynamicBean/execute/test1
+
+
+
+### 修改 bean
+PUT http://localhost:8080/dynamicBean
+Content-Type: application/json
+
+{
+  "beanName": "test1",
+  "script": "return { param -> println 'test running 111111111...' } as SAM",
+  "description": "test任务11111"
+}
+
+
+
+### 删除 bean
+DELETE http://localhost:8080/dynamicBean/test1
