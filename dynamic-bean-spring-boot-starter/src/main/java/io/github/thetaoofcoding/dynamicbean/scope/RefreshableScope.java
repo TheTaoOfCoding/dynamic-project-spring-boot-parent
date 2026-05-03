@@ -23,8 +23,9 @@ public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFac
 
     @Override
     public SAM<?, ?> get(String name, ObjectFactory<?> objectFactory) {
+        // 首次获取 bean 实例
         return singletonCache.computeIfAbsent(name, beanName -> {
-            // 注册销毁回调
+            // 同步注册销毁回调 （项目启动时从数据库全量同步注册 bean 时）
             registerDestructionCallback(beanName, () -> defaultListableBeanFactory.removeBeanDefinition(beanName));
             // 创建 bean
             return (SAM<?, ?>) objectFactory.getObject();
@@ -51,7 +52,7 @@ public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFac
         synchronized (this) {
             // 注册 beanDefinition
             registerBeanDefinition(beanName, beanDefinition);
-            // 同步注册销毁回调
+            // 同步注册销毁回调（运行时通过调用接口注册 bean 时）
             registerDestructionCallback(beanName, () -> defaultListableBeanFactory.removeBeanDefinition(beanName));
         }
     }

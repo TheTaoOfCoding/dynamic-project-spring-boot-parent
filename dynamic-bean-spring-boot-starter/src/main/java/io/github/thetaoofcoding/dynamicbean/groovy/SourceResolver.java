@@ -22,7 +22,8 @@ public interface SourceResolver<T, R> {
                 var beanName = refreshableBeanModel.beanName();
                 var beanDefinition = BeanDefinitionBuilder
                         .genericBeanDefinition(SAM.class, () -> sam)
-                        .setScope(RefreshableScope.SCOPE_NAME).getBeanDefinition();
+                        .setScope(RefreshableScope.SCOPE_NAME)
+                        .getBeanDefinition();
                 return new BeanDefinitionHolder(beanDefinition, beanName);
             };
         }

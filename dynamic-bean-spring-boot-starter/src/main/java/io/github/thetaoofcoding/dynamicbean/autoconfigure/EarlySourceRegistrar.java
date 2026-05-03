@@ -71,12 +71,13 @@ public class EarlySourceRegistrar {
     @Bean
     public static BeanDefinitionRegistryPostProcessor beanDefinitionRegistryPostProcessor(GroovyShellFactory groovyShellFactory, Environment environment) {
         return registry -> {
-            log.info("starting DatabaseMode BeanDefinitionRegistry.");
-            var jdbcTemplate = SourceResolver.SourceResolvers.earlyJdbcTemplateResolver().resolve(environment);
-            var refreshBeanModels = jdbcTemplate.query("select id, bean_name, script, description from refreshable_bean", RefreshableBeanModel::of);
-            var beanDefinitionHolders = refreshBeanModels.stream()
+            log.info("Registering dynamic bean definitions...");
+            var jdbcTemplate = SourceResolver.SourceResolvers.earlyJdbcTemplateResolver()
+                    .resolve(environment);
+            var refreshableBeanModels = jdbcTemplate.query("select id, bean_name, script, description from refreshable_bean", RefreshableBeanModel::of);
+            var beanDefinitionHolders = refreshableBeanModels.stream()
                     .map(SourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)::resolve)
-                    .peek(beanDefinitionHolder -> log.debug("register beanDefinition [{}]", beanDefinitionHolder.getBeanName()))
+                    .peek(beanDefinitionHolder -> log.debug("register dynamic bean : '{}'", beanDefinitionHolder.getBeanName()))
                     .collect(Collectors.toSet());
             beanDefinitionHolders.forEach(beanDefinitionHolder -> registry.registerBeanDefinition(beanDefinitionHolder.getBeanName(), beanDefinitionHolder.getBeanDefinition()));
         };

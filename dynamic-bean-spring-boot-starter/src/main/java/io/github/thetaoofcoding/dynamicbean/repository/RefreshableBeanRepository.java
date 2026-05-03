@@ -9,7 +9,7 @@ import java.util.List;
 public record RefreshableBeanRepository(JdbcTemplate jdbcTemplate) {
 
     public List<RefreshableBeanModel> selectAll() {
-        final var sql = "select id, bean_name, script, description from refreshable_bean";
+        final var sql = "SELECT id, bean_name, script, description FROM refreshable_bean";
         return jdbcTemplate.query(sql, RefreshableBeanModel::of);
     }
 

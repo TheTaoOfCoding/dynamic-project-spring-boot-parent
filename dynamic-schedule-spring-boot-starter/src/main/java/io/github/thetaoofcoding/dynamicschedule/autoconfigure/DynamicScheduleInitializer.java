@@ -4,7 +4,9 @@ import io.github.thetaoofcoding.dynamicschedule.service.ScheduledTaskDefinitionS
 import io.github.thetaoofcoding.dynamicschedule.service.ScheduledTaskService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class DynamicScheduleInitializer {
     private final ScheduledTaskDefinitionService scheduledTaskDefinitionService;
@@ -12,7 +14,10 @@ public class DynamicScheduleInitializer {
 
     @PostConstruct
     public void initialize() {
+        log.info("Initializing dynamic scheduled tasks...");
         var scheduledTaskDefinitions = scheduledTaskDefinitionService.list();
-        scheduledTaskDefinitions.forEach(scheduledTaskService::register);
+        scheduledTaskDefinitions.stream()
+                .peek(scheduledTaskDefinition -> log.debug("register dynamic scheduled task : '{}'", scheduledTaskDefinition.registryKey()))
+                .forEach(scheduledTaskService::register);
     }
 }
