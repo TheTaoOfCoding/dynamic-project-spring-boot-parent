@@ -2,7 +2,7 @@ package io.github.thetaoofcoding.dynamicbean.event;
 
 import io.github.thetaoofcoding.dynamicbean.groovy.GroovyShellFactory;
 import io.github.thetaoofcoding.dynamicbean.scope.RefreshableScope;
-import io.github.thetaoofcoding.dynamicbean.groovy.SourceResolver;
+import io.github.thetaoofcoding.dynamicbean.groovy.ResourceResolver;
 import io.github.thetaoofcoding.dynamicbean.model.RefreshableBeanModel;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,7 +23,7 @@ public record RefreshBeanEventListener(RefreshableScope refreshableScope, Groovy
 
     // 新增时，注册 BeanDefinition
     private void add(RefreshableBeanModel refreshableBeanModel) {
-        var beanDefinitionHolder = SourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)
+        var beanDefinitionHolder = ResourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)
                 .resolve(refreshableBeanModel);
 
         // 注册 bean

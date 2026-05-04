@@ -6,22 +6,27 @@ import groovy.lang.GroovyShell;
 import io.github.thetaoofcoding.dynamicbean.event.RefreshBeanEventListener;
 import io.github.thetaoofcoding.dynamicbean.groovy.GroovyShellFactory;
 import io.github.thetaoofcoding.dynamicbean.groovy.GroovyVariables;
-import io.github.thetaoofcoding.dynamicbean.groovy.SourceResolver;
+import io.github.thetaoofcoding.dynamicbean.groovy.ResourceResolver;
 import io.github.thetaoofcoding.dynamicbean.model.RefreshableBeanModel;
 import io.github.thetaoofcoding.dynamicbean.scope.RefreshableScope;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // 提前初始化的资源配置
 @Slf4j
@@ -47,24 +52,39 @@ public class EarlySourceRegistrar {
     }
 
     @Bean
-    public static GroovyShellFactory groovyShellFactory(ApplicationContext applicationContext, @Qualifier("groovyContext") ThreadLocal<Object> threadLocal) {
+    public static GroovyShellFactory groovyShellFactory(ApplicationContext applicationContext, @Qualifier("groovyContext") ThreadLocal<Object> threadLocal, Environment environment) {
         return () -> {
             // 默认导包
-            var customizer = new ImportCustomizer();
-            customizer.addImports("io.github.thetaoofcoding.dynamicbean.core.SAM");
+            var importCustomizer = new ImportCustomizer();
+            importCustomizer.addImports("io.github.thetaoofcoding.dynamicbean.core.SAM");
+
+            // 安全沙箱配置
+            var defaultBlacklist = List.of("java.lang.System", "java.lang.Runtime");
+            var addBlacklist = Binder.get(environment)
+                    .bind("dynamic-bean.security.blacklist", Bindable.listOf(String.class))
+                    .orElse(List.of());
+            var blacklist = Stream.concat(addBlacklist.stream(), defaultBlacklist.stream())
+                    .toList();
+            var secureCustomizer = new SecureASTCustomizer();
+            secureCustomizer.setDisallowedImports(blacklist);
+            secureCustomizer.setDisallowedReceivers(blacklist);
+            secureCustomizer.setIndirectImportCheckEnabled(true);
+
+            // 合并配置
+            var compilerConfiguration = new CompilerConfiguration();
+            compilerConfiguration.addCompilationCustomizers(importCustomizer, secureCustomizer);
+
+            // 使用独立类加载器
+            var parentLoader = applicationContext.getClassLoader();
+            var groovyClassLoader = new GroovyClassLoader(parentLoader);
 
             // 绑定上下文变量
             var binding = new Binding();
             binding.setVariable(GroovyVariables.VARIABLE_IOC, applicationContext);
             binding.setVariable(GroovyVariables.VARIABLE_LOCALS, threadLocal);
 
-            // 使用独立类加载器
-            var groovyClassLoader = new GroovyClassLoader();
-
-            // 配置编译器
-            var config = new CompilerConfiguration();
-            config.addCompilationCustomizers(customizer);
-            return new GroovyShell(groovyClassLoader, binding, config);
+            // 创建 GroovyShell
+            return new GroovyShell(groovyClassLoader, binding, compilerConfiguration);
         };
     }
 
@@ -72,11 +92,11 @@ public class EarlySourceRegistrar {
     public static BeanDefinitionRegistryPostProcessor beanDefinitionRegistryPostProcessor(GroovyShellFactory groovyShellFactory, Environment environment) {
         return registry -> {
             log.info("Registering dynamic bean definitions...");
-            var jdbcTemplate = SourceResolver.SourceResolvers.earlyJdbcTemplateResolver()
+            var jdbcTemplate = ResourceResolver.SourceResolvers.earlyJdbcTemplateResolver()
                     .resolve(environment);
             var refreshableBeanModels = jdbcTemplate.query("select id, bean_name, script, description from refreshable_bean", RefreshableBeanModel::of);
             var beanDefinitionHolders = refreshableBeanModels.stream()
-                    .map(SourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)::resolve)
+                    .map(ResourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)::resolve)
                     .peek(beanDefinitionHolder -> log.debug("register dynamic bean : '{}'", beanDefinitionHolder.getBeanName()))
                     .collect(Collectors.toSet());
             beanDefinitionHolders.forEach(beanDefinitionHolder -> registry.registerBeanDefinition(beanDefinitionHolder.getBeanName(), beanDefinitionHolder.getBeanDefinition()));

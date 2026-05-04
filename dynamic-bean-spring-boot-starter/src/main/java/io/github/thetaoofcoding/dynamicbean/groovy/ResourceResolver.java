@@ -10,11 +10,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @FunctionalInterface
-public interface SourceResolver<T, R> {
+public interface ResourceResolver<T, R> {
     R resolve(T t);
 
     class SourceResolvers {
-        public static SourceResolver<RefreshableBeanModel, BeanDefinitionHolder> beanDefinitionResolver(GroovyShellFactory groovyShellFactory) {
+        public static ResourceResolver<RefreshableBeanModel, BeanDefinitionHolder> beanDefinitionResolver(GroovyShellFactory groovyShellFactory) {
             return refreshableBeanModel -> {
                 var script = refreshableBeanModel.script();
                 var sam = (SAM<?, ?>) groovyShellFactory.create()
@@ -28,7 +28,7 @@ public interface SourceResolver<T, R> {
             };
         }
 
-        public static SourceResolver<Environment, JdbcTemplate> earlyJdbcTemplateResolver() {
+        public static ResourceResolver<Environment, JdbcTemplate> earlyJdbcTemplateResolver() {
             return environment -> {
                 var url = environment.getProperty("spring.datasource.url");
                 var username = environment.getProperty("spring.datasource.username");

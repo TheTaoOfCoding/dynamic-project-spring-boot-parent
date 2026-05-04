@@ -39,3 +39,15 @@ Content-Type: application/json
 
 ### 删除 bean
 DELETE http://localhost:8080/dynamicBean/test1
+
+
+
+### 新增 bean (黑名单测试)
+POST http://localhost:8080/dynamicBean
+Content-Type: application/json
+
+{
+  "beanName": "test2",
+  "script": "return { param -> println new io.github.thetaoofcoding.sample.black.User('test') } as SAM",
+  "description": "test任务"
+}
