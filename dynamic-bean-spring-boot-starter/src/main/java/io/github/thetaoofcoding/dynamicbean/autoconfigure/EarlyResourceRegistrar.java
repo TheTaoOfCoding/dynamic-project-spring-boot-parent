@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 // 提前初始化的资源配置
 @Slf4j
 @Configuration
-public class EarlySourceRegistrar {
+public class EarlyResourceRegistrar {
 
     // 自定义作用域
     @Bean
@@ -92,11 +92,11 @@ public class EarlySourceRegistrar {
     public static BeanDefinitionRegistryPostProcessor beanDefinitionRegistryPostProcessor(GroovyShellFactory groovyShellFactory, Environment environment) {
         return registry -> {
             log.info("Registering dynamic bean definitions...");
-            var jdbcTemplate = ResourceResolver.SourceResolvers.earlyJdbcTemplateResolver()
+            var jdbcTemplate = ResourceResolver.ResourceResolvers.earlyJdbcTemplateResolver()
                     .resolve(environment);
             var refreshableBeanModels = jdbcTemplate.query("select id, bean_name, script, description from refreshable_bean", RefreshableBeanModel::of);
             var beanDefinitionHolders = refreshableBeanModels.stream()
-                    .map(ResourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)::resolve)
+                    .map(ResourceResolver.ResourceResolvers.beanDefinitionResolver(groovyShellFactory)::resolve)
                     .peek(beanDefinitionHolder -> log.debug("register dynamic bean : '{}'", beanDefinitionHolder.getBeanName()))
                     .collect(Collectors.toSet());
             beanDefinitionHolders.forEach(beanDefinitionHolder -> registry.registerBeanDefinition(beanDefinitionHolder.getBeanName(), beanDefinitionHolder.getBeanDefinition()));

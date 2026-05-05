@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public interface ResourceResolver<T, R> {
     R resolve(T t);
 
-    class SourceResolvers {
+    class ResourceResolvers {
         public static ResourceResolver<RefreshableBeanModel, BeanDefinitionHolder> beanDefinitionResolver(GroovyShellFactory groovyShellFactory) {
             return refreshableBeanModel -> {
                 var script = refreshableBeanModel.script();

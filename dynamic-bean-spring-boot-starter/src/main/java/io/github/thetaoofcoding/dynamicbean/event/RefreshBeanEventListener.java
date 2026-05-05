@@ -23,7 +23,7 @@ public record RefreshBeanEventListener(RefreshableScope refreshableScope, Groovy
 
     // 新增时，注册 BeanDefinition
     private void add(RefreshableBeanModel refreshableBeanModel) {
-        var beanDefinitionHolder = ResourceResolver.SourceResolvers.beanDefinitionResolver(groovyShellFactory)
+        var beanDefinitionHolder = ResourceResolver.ResourceResolvers.beanDefinitionResolver(groovyShellFactory)
                 .resolve(refreshableBeanModel);
 
         // 注册 bean

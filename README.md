@@ -6,6 +6,8 @@
 [![Groovy](https://img.shields.io/badge/Groovy-5.0.4-purple.svg)](https://groovy-lang.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
 
+
+## 🎯 项目概述
 Dynamic Project Spring Boot Starter 是一个企业级动态化解决方案，包含两个核心模块：
 
 - **Dynamic Bean Starter**: 允许在运行时动态创建、更新和删除 Spring Bean，通过 Groovy 脚本定义 Bean 行为，并将脚本存储在数据库中
@@ -147,7 +149,25 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 
-### 4. 使用示例
+### 4. 配置动态 Bean Starter
+
+在 `application.yaml` 中添加动态 Bean 相关配置：
+
+```yaml
+# Dynamic Bean Starter 配置
+dynamic-bean:
+  # 安全配置 - 黑名单类（防止恶意脚本访问敏感类）
+  security:
+    blacklist:
+      - java.lang.Runtime
+      - java.lang.System
+      - java.io.File
+      - javax.script.ScriptEngineManager
+      - groovy.lang.GroovyShell
+```
+
+
+### 5. 使用示例
 #### REST API 仅为 sample 演示模块提供的，在使用 dynamic-bean-spring-boot-starter 或 dynamic-schedule-spring-boot-starter 时，需自行调用Service层实现并暴露接口
 
 ##### Dynamic Bean REST API
@@ -341,6 +361,25 @@ Content-Type: application/json
    - 限制脚本执行时间和资源使用
    - 添加适当的监控和日志记录
    - 考虑添加脚本版本管理和回滚机制
+
+## 🛡️ 安全配置指南
+
+### Dynamic Project Spring Boot Starter 类黑名单机制
+
+在 `application.yaml` 中配置黑名单类，防止脚本访问敏感系统类：
+
+```yaml
+dynamic-bean:
+  security:
+    blacklist:
+      - java.lang.Runtime
+      - java.lang.System
+      - java.io.File
+      - javax.script.ScriptEngineManager
+      - groovy.lang.GroovyShell
+      - java.net.URL
+      - java.net.Socket
+```
 
 ## 📜 许可证
 

@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
 import io.github.thetaoofcoding.dynamicbean.service.impl.RefreshableBeanServiceImpl;
 
-@Import({EarlySourceRegistrar.class, RefreshableBeanServiceImpl.class, RefreshableBeanRepository.class})
+@Import({EarlyResourceRegistrar.class, RefreshableBeanServiceImpl.class, RefreshableBeanRepository.class})
 @AutoConfiguration
 public class DynamicBeanAutoConfiguration {
 }
