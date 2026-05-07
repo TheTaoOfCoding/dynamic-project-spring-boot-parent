@@ -56,6 +56,11 @@ public record ScheduledTaskRegistrar(
         }
     }
 
+    @Override
+    public boolean contains(String registryKey) {
+        return scheduledFutureMap.containsKey(registryKey);
+    }
+
     private Runnable getDynamicTask(String beanName) {
         return applicationContext.getBean(beanName, SAM.class);
     }

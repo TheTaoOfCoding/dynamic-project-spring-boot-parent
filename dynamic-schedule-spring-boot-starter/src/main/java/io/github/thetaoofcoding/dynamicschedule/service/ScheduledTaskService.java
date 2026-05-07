@@ -9,4 +9,6 @@ public interface ScheduledTaskService {
     void unregister(String registryKey);
 
     void reregister(ScheduledTaskDefinition scheduledTaskDefinition);
+
+    boolean contains(String registryKey);
 }

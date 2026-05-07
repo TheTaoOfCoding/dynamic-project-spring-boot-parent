@@ -3,6 +3,7 @@ package io.github.thetaoofcoding.dynamicbean.service.impl;
 import io.github.thetaoofcoding.dynamicbean.util.Assert;
 import io.github.thetaoofcoding.dynamicbean.util.Assert.Predicates;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import io.github.thetaoofcoding.dynamicbean.service.RefreshableBeanService;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class RefreshableBeanServiceImpl implements RefreshableBeanService {
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -27,6 +29,7 @@ public class RefreshableBeanServiceImpl implements RefreshableBeanService {
     @Override
     @Transactional
     public int create(RefreshableBeanModel refreshableBeanModel) {
+        log.debug("Creating refreshable bean: {}", refreshableBeanModel);
         preCheck(refreshableBeanModel);
 
         var beanName = refreshableBeanModel.beanName();
@@ -40,6 +43,7 @@ public class RefreshableBeanServiceImpl implements RefreshableBeanService {
     @Override
     @Transactional
     public int update(RefreshableBeanModel refreshableBeanModel) {
+        log.debug("Updating refreshable bean: {}", refreshableBeanModel);
         preCheck(refreshableBeanModel);
 
         var beanName = refreshableBeanModel.beanName();
@@ -54,6 +58,7 @@ public class RefreshableBeanServiceImpl implements RefreshableBeanService {
     @Override
     @Transactional
     public int remove(String beanName) {
+        log.debug("Removing refreshable bean: {}", beanName);
         var oldRecord = existsCheck(beanName);
         var result = refreshableBeanRepository.delete(beanName);
         refresh(RefreshBeanEvent.deleteWith(oldRecord));

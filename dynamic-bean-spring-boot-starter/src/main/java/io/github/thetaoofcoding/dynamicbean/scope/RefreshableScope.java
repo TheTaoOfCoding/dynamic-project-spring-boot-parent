@@ -1,6 +1,7 @@
 package io.github.thetaoofcoding.dynamicbean.scope;
 
 import io.github.thetaoofcoding.dynamicbean.core.SAM;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -10,7 +11,10 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// 自定义域对象，存储 RefreshAble Bean
+/*
+ * 自定义域对象，存储 RefreshAble Bean
+ */
+@Slf4j
 public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFactory,
                                Map<String, SAM<?, ?>> singletonCache,
                                Map<String, Runnable> destructionCallbackCache) implements Scope {
@@ -25,6 +29,7 @@ public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFac
     public SAM<?, ?> get(String name, ObjectFactory<?> objectFactory) {
         // 首次获取 bean 实例
         return singletonCache.computeIfAbsent(name, beanName -> {
+            log.debug("first time get dynamic bean: {}", beanName);
             // 同步注册销毁回调 （项目启动时从数据库全量同步注册 bean 时）
             registerDestructionCallback(beanName, () -> defaultListableBeanFactory.removeBeanDefinition(beanName));
             // 创建 bean
@@ -34,6 +39,7 @@ public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFac
 
     @Override
     public Object remove(String name) {
+        log.debug("remove dynamic bean: {}", name);
         synchronized (this) {
             destructionCallbackCache.computeIfPresent(name, (_, v) -> {
                 // 执行销毁回调
@@ -49,6 +55,7 @@ public record RefreshableScope(DefaultListableBeanFactory defaultListableBeanFac
     public void register(BeanDefinitionHolder beanDefinitionHolder) {
         var beanName = beanDefinitionHolder.getBeanName();
         var beanDefinition = beanDefinitionHolder.getBeanDefinition();
+        log.debug("register dynamic bean: {}", beanName);
         synchronized (this) {
             // 注册 beanDefinition
             registerBeanDefinition(beanName, beanDefinition);

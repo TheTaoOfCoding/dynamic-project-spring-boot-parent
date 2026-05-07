@@ -31,7 +31,9 @@ public class RefreshBeanEvent extends ApplicationEvent {
         return new RefreshBeanEvent(Map.of(EventType.DEL, refreshableBeanModel));
     }
 
-    // 使用 LinkedHashMap 控制顺序，以确保先执行 DEL，再执行 ADD
+    /*
+     * 使用 LinkedHashMap 控制写入顺序，确保消费时先执行 DEL，再执行 ADD
+     */
     public static RefreshBeanEvent updateWith(RefreshableBeanModel beforeModel, RefreshableBeanModel afterModel) {
         var map = new LinkedHashMap<EventType, RefreshableBeanModel>();
         map.put(EventType.DEL, beforeModel);

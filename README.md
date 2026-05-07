@@ -1,7 +1,7 @@
 # Dynamic Project Spring Boot Starter
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/) 
+[![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-green.svg)](https://spring.io/projects/spring-boot)
 [![Groovy](https://img.shields.io/badge/Groovy-5.0.4-purple.svg)](https://groovy-lang.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
@@ -10,10 +10,22 @@
 ## 🎯 项目概述
 Dynamic Project Spring Boot Starter 是一个企业级动态化解决方案，包含两个核心模块：
 
-- **Dynamic Bean Starter**: 允许在运行时动态创建、更新和删除 Spring Bean，通过 Groovy 脚本定义 Bean 行为，并将脚本存储在数据库中
+- **Dynamic Bean Starter**: 通过 Groovy 脚本定义动态 Bean 行为，将脚本存储在数据库中，会在启动时，首次全量同步注册来自数据库中配置的动态
+  bean，并允许在运行时动态创建、更新和删除动态 Bean
 - **Dynamic Schedule Starter**: 提供基于 Cron 表达式的动态定时任务管理，支持运行时添加、修改和删除定时任务
 
 整个解决方案实现了无需重启应用即可修改业务逻辑和定时任务的功能，极大提升了系统的灵活性和可维护性。
+
+## 🚀 适用场景
+
+- **热更新场景**：无需重启应用即可修改业务逻辑，适用于生产环境紧急修复、功能迭代等场景
+- **规则引擎场景**：将业务规则以Groovy脚本形式存储在数据库中，支持动态配置和实时生效，适用于风控规则、营销规则、审批流程等
+- **动态策略场景**：根据不同业务条件（如用户等级、地域、时间等）动态切换业务策略，适用于个性化推荐、智能定价、多渠道分发等
+- **动态求值场景**：运行时动态计算复杂表达式，支持函数式编程接口（Runnable/Consumer/Supplier/Function/Predicate），适用于公式计算、条件判断、数据转换等
+- **动态定时任务场景**：基于Cron表达式的动态定时任务管理，支持运行时添加、修改、删除任务，适用于报表生成、数据清理、状态同步等
+- **A/B测试场景**：快速部署和切换不同版本的业务逻辑，支持灰度发布和流量控制
+- **灰度发布场景**：逐步向用户推送新功能，降低上线风险，支持按用户分组、地域、设备类型等维度进行灰度控制
+- **配置中心场景**：将动态Bean作为配置项管理，实现配置与代码分离，提高系统可维护性
 
 ## 🌟 核心特性
 
@@ -52,7 +64,7 @@ dynamic-project-spring-boot-parent/
 │   ├── src/main/java/io/github/thetaoofcoding/dynamicbean/
 │   │   ├── autoconfigure/                # 自动配置类
 │   │   │   ├── DynamicBeanAutoConfiguration.java
-│   │   │   └── EarlySourceRegistrar.java
+│   │   │   └── EarlyResourceRegistrar.java
 │   │   ├── model/                        # 数据模型
 │   │   │   └── RefreshableBeanModel.java
 │   │   ├── repository/                   # 数据访问层
@@ -65,7 +77,7 @@ dynamic-project-spring-boot-parent/
 │   │   ├── groovy/                       # Groovy 相关组件
 │   │   │   ├── GroovyShellFactory.java   # Groovy Shell 工厂
 │   │   │   ├── GroovyVariables.java      # Groovy 变量定义
-│   │   │   └── SourceResolver.java         # 源解析器
+│   │   │   └── ResourceResolver.java     # 资源解析器
 │   │   ├── event/                        # 事件相关
 │   │   │   ├── RefreshBeanEvent.java     # 刷新事件
 │   │   │   └── RefreshBeanEventListener.java # 事件监听器
@@ -95,6 +107,9 @@ dynamic-project-spring-boot-parent/
 │   │   ├── controller/                   # REST控制器
 │   │   │   ├── DynamicBeanController.java
 │   │   │   └── DynamicScheduleController.java
+│   │   ├── black/                        # 黑名单功能测试类
+│   │   │   ├── Manager.java              # 测试类
+│   │   │   └── User.java                 # 测试类
 │   │   └── DynamicProjectSampleApplication.java
 │   └── src/main/resources/application.yaml
 ├── schema/                               # 数据库脚本
@@ -168,7 +183,7 @@ dynamic-bean:
 
 
 ### 5. 使用示例
-#### REST API 仅为 sample 演示模块提供的，在使用 dynamic-bean-spring-boot-starter 或 dynamic-schedule-spring-boot-starter 时，需自行调用Service层实现并暴露接口
+#### 仅为 sample 演示模块提供了 REST API ，使用 dynamic-bean-spring-boot-starter 或 dynamic-schedule-spring-boot-starter 时，用户需自行调用各自 Service 层实现控制层，并自主选择暴露接口，其中参数校验部分已下沉至 Service 层，无需额外关心
 
 ##### Dynamic Bean REST API
 | 方法 | 路径 | 描述 |
